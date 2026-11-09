@@ -332,7 +332,7 @@ function downloadZip() {
   }));
   const blob = buildZip(files);
   const stamp = new Date().toISOString().slice(0, 10);
-  downloadBlob(blob, `toazw3-${stamp}.zip`);
+  downloadBlob(blob, `ebook-converter-${stamp}.zip`);
 }
 
 dropzone.addEventListener('click', () => fileInput.click());

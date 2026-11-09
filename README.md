@@ -1,6 +1,6 @@
-# toazw3
+# ebook_converter
 
-**Use it here: [https://vicholz.github.io/toazw3/](https://vicholz.github.io/toazw3/)**
+**Use it here: [https://vicholz.github.io/ebook_converter/](https://vicholz.github.io/ebook_converter/)**
 
 Browser-only converter for **EPUB**, **MOBI** (also PRC / AZW), **AZW3**, **CBZ**, and **CBR**. Pick an output of Kindle **AZW3**, **EPUB**, or older Kindle **MOBI**. Drop one file or a whole stack. Conversion happens in this tab with WebAssembly. Nothing is uploaded.
 
