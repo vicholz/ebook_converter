@@ -18,7 +18,7 @@ import {
 } from "./schedule.js";
 import { exportIcs, importIcs } from "./ics.js";
 
-const APP_REPO = "vicholz/toazw3";
+const APP_REPO = "vicholz/simple_scheduler";
 
 const state = {
   data: loadState(),
