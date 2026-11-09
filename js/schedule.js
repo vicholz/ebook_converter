@@ -302,7 +302,13 @@ export function allEvents(state) {
         color: type?.color || "#2f6f5e",
         people: (a.personIds || [])
           .map((id) => peopleById.get(id))
-          .filter(Boolean),
+          .filter(Boolean)
+          .sort((a, b) =>
+            String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+              sensitivity: "base",
+              numeric: true,
+            })
+          ),
         frequency: schedule.frequency,
       });
     }

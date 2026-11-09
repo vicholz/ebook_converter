@@ -29,15 +29,22 @@ export const SEASONS = [
   { value: "winter", label: "Winter", month: 11, day: 21 },
 ];
 
+export function byName(a, b) {
+  return String(a?.name || "").localeCompare(String(b?.name || ""), undefined, {
+    sensitivity: "base",
+    numeric: true,
+  });
+}
+
 export function emptyState() {
   return {
     version: APP_VERSION,
     people: [],
     pools: [],
     eventTypes: [
-      { id: uid("etype"), name: "Shift", color: "#2f6f5e" },
-      { id: uid("etype"), name: "On-call", color: "#b45a2a" },
       { id: uid("etype"), name: "Host", color: "#3d5a80" },
+      { id: uid("etype"), name: "On-call", color: "#b45a2a" },
+      { id: uid("etype"), name: "Shift", color: "#2f6f5e" },
     ],
     schedules: [],
   };
@@ -107,10 +114,10 @@ export function normalizeState(input) {
 
   return {
     version: APP_VERSION,
-    people,
-    pools,
-    eventTypes,
-    schedules,
+    people: people.slice().sort(byName),
+    pools: pools.slice().sort(byName),
+    eventTypes: eventTypes.slice().sort(byName),
+    schedules: schedules.slice().sort(byName),
   };
 }
 
@@ -199,7 +206,7 @@ export function peopleForSchedule(state, schedule) {
     if (!pool) continue;
     for (const pid of pool.personIds) ids.add(pid);
   }
-  return state.people.filter((p) => ids.has(p.id));
+  return state.people.filter((p) => ids.has(p.id)).sort(byName);
 }
 
 export function mergeStates(current, incoming, mode = "replace") {

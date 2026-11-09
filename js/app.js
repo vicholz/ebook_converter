@@ -948,7 +948,11 @@ function renderCalendar() {
     const item = document.createElement("article");
     item.className = "cal-item";
     item.style.setProperty("--event-color", ev.color);
-    const people = ev.people.map((p) => p.name).join(", ") || "Unassigned";
+    const people =
+      ev.people
+        .map((p) => p.name)
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base", numeric: true }))
+        .join(", ") || "Unassigned";
     item.innerHTML = `
       <div class="cal-date"></div>
       <div class="cal-body">
