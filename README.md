@@ -1,32 +1,44 @@
-# toazw3
+# simple_scheduler
 
-**Use it here: [https://vicholz.github.io/toazw3/](https://vicholz.github.io/toazw3/)**
-
-Browser-only converter for **EPUB**, **MOBI** (also PRC / AZW), **CBZ**, and **CBR** into Kindle **AZW3**. Drop one file or a whole stack. Conversion happens in this tab with WebAssembly. Nothing is uploaded.
+Browser-only people scheduler. Vanilla HTML, CSS, and JavaScript — no build step, no server. Data stays in `localStorage` until you export it.
 
 ## Features
 
-- Bulk queue: add many ebooks or comics, convert them one after another
-- Per-file download plus **Download all as ZIP**
-- Cover images from the source EPUB/MOBI are copied into the AZW3 and tagged for Kindle
-- CBZ and CBR comics become one Kindle page per image, with the first page used as the cover
-- DRM-free files only — encrypted Kindle books and password-protected comics will fail
-- Works from any static web server, including GitHub Pages
+- **People** — add and manage everyone who can be scheduled
+- **Pools** — reusable groups of people you can attach to schedules
+- **Event types** — label duties (Host, On-call, …) and optionally **avoid scheduling the same person for the same event type twice in a row**
+- **Schedules** — weekly, 2× / month, monthly, quarterly, seasonally, or yearly
+- **Assignments** — auto-fill from pools/people, then tweak per date
+- **Calendar** — upcoming assignments across every schedule
+- **Import / export** — JSON (replace or merge) and calendar **ICS**
 
-## Run locally
-
-Any static file server is enough. From this directory:
+## Open locally
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8080
 ```
 
-Then open [http://localhost:8000](http://localhost:8000). Opening `index.html` as a `file://` URL will not load the converter.
+Then open [http://localhost:8080](http://localhost:8080).
 
-## How it works
+Or open `index.html` directly in a modern browser (ES modules + `localStorage`).
 
-The UI is vanilla HTML, CSS, and JavaScript. A Web Worker loads a vendored [boko](https://github.com/zacharydenton/boko) WASM module and converts each book to AZW3. CBZ (ZIP) and CBR (RAR) comics are unpacked in the browser with vendored [libarchive](https://github.com/ofk/libarchive-wasm), turned into a page-by-page EPUB, then converted to AZW3. JPEG, PNG, and GIF pages are kept; WebP, BMP, and AVIF pages are re-encoded as JPEG. Bulk ZIP files are built in the browser with uncompressed (STORE) zip records.
+## Demo
+
+Open with `#demo` (or use the **Demo** control) to load sample people, pools, and schedules with generated assignments.
+
+## Project layout
+
+```
+index.html
+css/style.css
+js/
+  app.js        UI
+  store.js      localStorage model
+  schedule.js   recurrence + auto-assign
+  ics.js        ICS import/export
+  id.js         ids
+```
 
 ## License
 
-GPL-3.0-or-later, because the conversion engine is boko (GPL-3.0-or-later). The comic unpacker is libarchive-wasm (MIT) with libarchive (BSD-2-Clause). See `LICENSE`, `vendor/boko/`, and `vendor/libarchive/`.
+MIT

@@ -1,139 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Convert EPUB, MOBI, CBZ, and CBR files to Kindle AZW3 in your browser. Bulk conversion, no uploads, files never leave your device.">
-  <title>toazw3 — EPUB, MOBI, CBZ &amp; CBR to Kindle AZW3</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232a221c'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' fill='%23e8b86d'%3E3%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RK0SQEGSD5"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-RK0SQEGSD5');
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="simple_scheduler — browser-only people pools and recurring schedules with JSON and ICS import/export." />
+  <title>simple_scheduler</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231a2f2a'/%3E%3Cpath d='M8 11h16M8 16h16M8 21h10' stroke='%23c8e6c9' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div class="page">
-    <header class="masthead">
-      <p class="kicker">Kindle sideloading</p>
-      <h1>toazw3</h1>
-      <p class="lede">Drop EPUB, MOBI, CBZ, or CBR files here and convert them to AZW3 on this device. Nothing is uploaded. Bulk queues are welcome.</p>
-      <p class="app-version" id="app-version" hidden></p>
-    </header>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-    <section class="engine" id="engine" aria-live="polite">
-      <span class="engine-dot" id="engine-dot"></span>
-      <span id="engine-status">Loading converter…</span>
-    </section>
+  <div class="atmosphere" aria-hidden="true"></div>
 
-    <section
-      class="dropzone"
-      id="dropzone"
-      tabindex="0"
-      role="button"
-      aria-controls="queue"
-      aria-label="Add EPUB, MOBI, CBZ, or CBR files">
-      <input
-        id="file-input"
-        type="file"
-        accept=".epub,.mobi,.prc,.azw,.azw3,.cbz,.cbr,application/epub+zip,application/x-mobipocket-ebook,application/vnd.comicbook+zip,application/vnd.comicbook-rar,application/x-cbz,application/x-cbr"
-        multiple
-        hidden>
-      <div class="dropzone-mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none">
-          <rect x="10" y="8" width="20" height="28" rx="2" stroke="currentColor" stroke-width="1.6"/>
-          <path d="M14 16h12M14 21h12M14 26h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          <path d="M28 22l8 8m0 0h-6.5M36 30v-6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div class="brand-text">
+        <h1 class="brand-name">simple_scheduler</h1>
+        <p class="brand-tag">People pools · recurring duty · stays in your browser</p>
+        <p class="app-version" id="app-version" hidden></p>
       </div>
-      <p class="dropzone-title">Drop ebooks or comics here</p>
-      <p class="dropzone-hint">or <span class="browse">browse</span> — EPUB, MOBI, PRC, AZW, CBZ, CBR. Several at once is fine.</p>
+    </div>
+    <nav class="app-nav" aria-label="Primary">
+      <button type="button" class="nav-btn is-active" data-view="people">People</button>
+      <button type="button" class="nav-btn" data-view="pools">Pools</button>
+      <button type="button" class="nav-btn" data-view="schedules">Schedules</button>
+      <button type="button" class="nav-btn" data-view="calendar">Calendar</button>
+      <button type="button" class="nav-btn" data-view="data">Data</button>
+    </nav>
+    <div class="header-actions">
+      <a href="#demo" class="btn btn-secondary" id="btn-demo" title="Load sample people, pools, and schedules">Demo</a>
+    </div>
+  </header>
+
+  <p id="global-status" class="global-status" role="status" aria-live="polite" hidden></p>
+
+  <main id="main" class="app-main">
+    <!-- People -->
+    <section id="view-people" class="view is-active" aria-labelledby="people-heading">
+      <div class="view-intro">
+        <h2 id="people-heading">People</h2>
+        <p>Add everyone who can appear on a schedule. Group them into pools next.</p>
+      </div>
+      <form id="person-form" class="inline-form" autocomplete="off">
+        <label class="sr-only" for="person-name">Name</label>
+        <input id="person-name" name="name" type="text" maxlength="80" placeholder="Add a person…" required />
+        <button type="submit" class="btn btn-primary">Add</button>
+      </form>
+      <ul id="people-list" class="stack-list" aria-live="polite"></ul>
+      <p id="people-empty" class="empty-hint">No people yet. Add names above.</p>
     </section>
 
-    <section class="queue-wrap" id="queue-wrap" hidden>
-      <div class="queue-head">
-        <h2>Queue <span class="count" id="queue-count">0</span></h2>
-        <div class="queue-actions">
-          <button type="button" class="btn ghost" id="clear-btn">Clear</button>
-          <button type="button" class="btn ghost" id="add-more-btn">Add more</button>
-          <button type="button" class="btn" id="convert-btn">Convert to AZW3</button>
+    <!-- Pools + event types -->
+    <section id="view-pools" class="view" aria-labelledby="pools-heading" hidden>
+      <div class="view-intro">
+        <h2 id="pools-heading">Pools &amp; event types</h2>
+        <p>Pools are reusable groups. Event types power the “avoid consecutive same type” rule.</p>
+      </div>
+
+      <div class="split-panels">
+        <div>
+          <h3 class="panel-title">Pools</h3>
+          <form id="pool-form" class="inline-form" autocomplete="off">
+            <label class="sr-only" for="pool-name">Pool name</label>
+            <input id="pool-name" type="text" maxlength="80" placeholder="New pool name…" required />
+            <button type="submit" class="btn btn-primary">Add pool</button>
+          </form>
+          <div id="pools-list" class="pools-list"></div>
+          <p id="pools-empty" class="empty-hint">No pools yet.</p>
+        </div>
+
+        <div>
+          <h3 class="panel-title">Event types</h3>
+          <form id="etype-form" class="inline-form etype-form" autocomplete="off">
+            <label class="sr-only" for="etype-name">Event type</label>
+            <input id="etype-name" type="text" maxlength="60" placeholder="e.g. Host, On-call…" required />
+            <label class="sr-only" for="etype-color">Color</label>
+            <input id="etype-color" type="color" value="#2f6f5e" title="Color" />
+            <button type="submit" class="btn btn-primary">Add</button>
+          </form>
+          <ul id="etype-list" class="stack-list"></ul>
         </div>
       </div>
-      <ul class="queue" id="queue"></ul>
-      <div class="batch-bar" id="batch-bar" hidden>
-        <button type="button" class="btn" id="download-zip-btn">Download all as ZIP</button>
-        <p class="batch-note" id="batch-note"></p>
+    </section>
+
+    <!-- Schedules -->
+    <section id="view-schedules" class="view" aria-labelledby="schedules-heading" hidden>
+      <div class="view-intro">
+        <h2 id="schedules-heading">Schedules</h2>
+        <p>Create recurring schedules, attach pools or people, then generate assignments.</p>
+      </div>
+
+      <div class="toolbar-row">
+        <label class="field-label" for="schedule-select">Active schedule</label>
+        <div class="toolbar-controls">
+          <select id="schedule-select" aria-label="Select schedule"></select>
+          <button type="button" class="btn btn-primary" id="btn-new-schedule">New</button>
+          <button type="button" class="btn btn-danger" id="btn-delete-schedule">Delete</button>
+        </div>
+      </div>
+      <p id="schedules-empty" class="empty-hint">No schedules yet. Click New to create one.</p>
+
+      <div id="schedule-workspace" hidden>
+        <form id="schedule-form" class="schedule-form">
+          <div class="form-grid">
+            <label>
+              Name
+              <input name="schedName" type="text" maxlength="100" required />
+            </label>
+            <label>
+              Event type
+              <select name="eventTypeId"></select>
+            </label>
+            <label>
+              Frequency
+              <select name="frequency"></select>
+            </label>
+            <label>
+              People per occurrence
+              <input name="slotsPerOccurrence" type="number" min="1" max="50" />
+            </label>
+            <label>
+              Start date
+              <input name="startDate" type="date" required />
+            </label>
+            <label>
+              End date <span class="opt">(optional)</span>
+              <input name="endDate" type="date" />
+            </label>
+            <label>
+              Horizon (months)
+              <input name="horizonMonths" type="number" min="1" max="60" />
+            </label>
+            <label class="check-line span-2">
+              <input name="avoidConsecutive" type="checkbox" />
+              Avoid scheduling the same person for this event type twice in a row
+            </label>
+          </div>
+
+          <div class="freq-options">
+            <div data-freq="weekly">
+              <label>
+                Weekday
+                <select name="weekday">
+                  <option value="0">Sunday</option>
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                </select>
+              </label>
+            </div>
+
+            <div data-freq="twice_monthly" class="inline-pair" hidden>
+              <label>
+                First day of month
+                <input name="dayOfMonth1" type="number" min="1" max="31" />
+              </label>
+              <label>
+                Second day of month
+                <input name="dayOfMonth2" type="number" min="1" max="31" />
+              </label>
+            </div>
+
+            <div data-freq="monthly,quarterly,seasonally" hidden>
+              <label>
+                Day of month
+                <input name="monthDay" type="number" min="1" max="31" />
+              </label>
+            </div>
+
+            <div data-freq="seasonally" hidden>
+              <p class="field-label">Seasons</p>
+              <div id="season-months" class="check-grid"></div>
+              <p class="hint">Default season months: Mar / Jun / Sep / Dec. Uses the day-of-month above.</p>
+            </div>
+
+            <div data-freq="yearly" class="inline-pair" hidden>
+              <label>
+                Month
+                <select name="yearMonth">
+                  <option value="0">January</option>
+                  <option value="1">February</option>
+                  <option value="2">March</option>
+                  <option value="3">April</option>
+                  <option value="4">May</option>
+                  <option value="5">June</option>
+                  <option value="6">July</option>
+                  <option value="7">August</option>
+                  <option value="8">September</option>
+                  <option value="9">October</option>
+                  <option value="10">November</option>
+                  <option value="11">December</option>
+                </select>
+              </label>
+              <label>
+                Day
+                <input name="yearDay" type="number" min="1" max="31" />
+              </label>
+            </div>
+          </div>
+
+          <div class="split-panels">
+            <div>
+              <h3 class="panel-title">Pools on this schedule</h3>
+              <div id="sched-pools" class="check-grid"></div>
+            </div>
+            <div>
+              <h3 class="panel-title">Extra people</h3>
+              <div id="sched-people" class="check-grid"></div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save schedule</button>
+            <button type="button" class="btn btn-secondary" id="btn-generate">Fill empty assignments</button>
+            <button type="button" class="btn btn-ghost" id="btn-regenerate">Regenerate all</button>
+            <button type="button" class="btn btn-ghost" id="btn-clear-assignments">Clear assignments</button>
+          </div>
+        </form>
+
+        <div class="assignments-panel">
+          <div class="assignments-head">
+            <h3>Assignments</h3>
+            <p id="assignment-meta" class="hint"></p>
+          </div>
+          <div id="assignment-list" class="assignment-list"></div>
+        </div>
       </div>
     </section>
 
-    <aside class="notes">
-      <article>
-        <h3>Private by design</h3>
-        <p>Conversion runs in WebAssembly in this tab. Books are not sent to a server.</p>
-      </article>
-      <article>
-        <h3>DRM will fail</h3>
-        <p>Amazon-encrypted Kindle files and password-protected comics cannot be converted. Use DRM-free EPUB, MOBI, CBZ, or CBR sources.</p>
-      </article>
-      <article>
-        <h3>Kindle copies</h3>
-        <p>Copy the <code>.azw3</code> files into your Kindle’s documents folder, or send them with USB.</p>
-      </article>
-    </aside>
+    <!-- Calendar -->
+    <section id="view-calendar" class="view" aria-labelledby="calendar-heading" hidden>
+      <div class="view-intro">
+        <h2 id="calendar-heading">Calendar</h2>
+        <p>Upcoming assignments across every schedule.</p>
+      </div>
+      <div id="calendar-list" class="calendar-list"></div>
+      <p id="calendar-empty" class="empty-hint">Nothing scheduled yet. Create a schedule and generate assignments.</p>
+    </section>
 
-    <footer class="colophon">
-      <p>
-        Live site:
-        <a href="https://vicholz.github.io/toazw3/">vicholz.github.io/toazw3</a>
-      </p>
-      <p>
-        Source:
-        <a href="https://github.com/vicholz/toazw3">github.com/vicholz/toazw3</a>
-        · Conversion engine:
-        <a href="https://github.com/zacharydenton/boko">boko</a>
-        (GPL-3.0)
-        · Comics:
-        <a href="https://github.com/ofk/libarchive-wasm">libarchive</a>
-      </p>
-    </footer>
-  </div>
+    <!-- Data -->
+    <section id="view-data" class="view" aria-labelledby="data-heading" hidden>
+      <div class="view-intro">
+        <h2 id="data-heading">Data</h2>
+        <p>Everything is stored in this browser. Export JSON or ICS anytime.</p>
+      </div>
+      <p id="data-summary" class="data-summary"></p>
+
+      <div class="data-actions">
+        <button type="button" class="btn btn-primary" id="btn-export-json">Export JSON</button>
+        <button type="button" class="btn btn-secondary" id="btn-copy-json">Copy JSON</button>
+        <button type="button" class="btn btn-secondary" id="btn-export-ics">Export ICS</button>
+        <button type="button" class="btn btn-danger" id="btn-reset">Reset all</button>
+      </div>
+
+      <fieldset class="import-box">
+        <legend>Import</legend>
+        <div class="import-modes">
+          <label class="check-item"><input type="radio" name="importMode" value="replace" checked /> Replace current data</label>
+          <label class="check-item"><input type="radio" name="importMode" value="merge" /> Merge by id</label>
+        </div>
+        <div class="import-row">
+          <label class="btn btn-ghost file-btn">
+            Import JSON file
+            <input id="import-json-file" type="file" accept="application/json,.json" hidden />
+          </label>
+          <label class="btn btn-ghost file-btn">
+            Import ICS file
+            <input id="import-ics-file" type="file" accept="text/calendar,.ics" hidden />
+          </label>
+        </div>
+        <label class="block-label" for="json-paste">Or paste JSON</label>
+        <textarea id="json-paste" rows="8" placeholder='{ "people": [], "pools": [], "schedules": [] }'></textarea>
+        <button type="button" class="btn btn-primary" id="btn-import-json-paste">Import pasted JSON</button>
+      </fieldset>
+    </section>
+  </main>
+
+  <footer class="colophon">
+    <p>simple_scheduler runs entirely in your browser. Data stays in local storage unless you export it.</p>
+  </footer>
+
   <script type="module" src="js/app.js"></script>
-  <script>
-    const APP_REPO = "vicholz/toazw3";
-
-    function renderAppVersion(sha) {
-      const el = document.querySelector("#app-version");
-      if (!el || !sha) return;
-      el.replaceChildren();
-      el.append("Version ");
-      const a = document.createElement("a");
-      a.href = "https://github.com/" + APP_REPO + "/commit/" + sha;
-      a.target = "_blank";
-      a.rel = "noopener";
-      a.textContent = sha.slice(0, 7);
-      a.title = "View the diff for this version";
-      el.appendChild(a);
-      el.hidden = false;
-    }
-
-    function loadAppVersion() {
-      fetch("https://api.github.com/repos/" + APP_REPO + "/commits/main")
-        .then(function (res) {
-          if (!res.ok) throw new Error(res.status);
-          return res.json();
-        })
-        .then(function (commit) {
-          if (commit.sha) renderAppVersion(commit.sha);
-        })
-        .catch(function () {});
-    }
-
-    loadAppVersion();
-  </script>
 </body>
 </html>
