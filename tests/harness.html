@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>toazw3 conversion harness</title>
+</head>
+<body>
+<pre id="result">running</pre>
+<script type="module">
+import { convertBook, initConverter } from '../js/convert.js';
+import { buildZipBytes } from '../js/zip.js';
+
+const out = document.querySelector('#result');
+
+function markerJpeg(text) {
+  const comment = new TextEncoder().encode(text);
+  const bytes = new Uint8Array(4 + 2 + comment.length + 2);
+  bytes.set([0xff, 0xd8, 0xff, 0xfe, (comment.length + 2) >> 8, (comment.length + 2) & 255], 0);
+  bytes.set(comment, 6);
+  bytes.set([0xff, 0xd9], 6 + comment.length);
+  return bytes;
+}
+
+function includes(haystack, needle) {
+  const text = new TextDecoder('latin1').decode(haystack);
+  return text.includes(needle);
+}
+
+try {
+  await initConverter();
+  const cover = markerJpeg('COMIC-COVER-MARKER');
+  const page = markerJpeg('COMIC-PAGE-MARKER');
+  const info = new TextEncoder().encode(`<?xml version="1.0"?>
+<ComicInfo>
+  <Title>Dock</Title>
+  <Series>Harbor</Series>
+  <Number>2</Number>
+  <Writer>Ada Kindle</Writer>
+  <Summary>A dock story.</Summary>
+  <LanguageISO>en</LanguageISO>
+</ComicInfo>`);
+  const cbz = buildZipBytes([
+    { name: 'ComicInfo.xml', data: info },
+    { name: 'page1.jpg', data: cover },
+    { name: 'page2.jpg', data: page },
+  ]);
+
+  const azw3 = await convertBook(cbz, 'cbz', 'azw3', { name: 'harbor.cbz' });
+  const epub = await convertBook(cbz, 'cbz', 'epub', { name: 'harbor.cbz' });
+  const mobi = await convertBook(cbz, 'cbz', 'mobi', { name: 'harbor.cbz' });
+  const checks = [
+    ['azw3 magic', includes(azw3.bytes, 'BOOKMOBI')],
+    ['azw3 cover', includes(azw3.bytes, 'COMIC-COVER-MARKER')],
+    ['azw3 page', includes(azw3.bytes, 'COMIC-PAGE-MARKER')],
+    ['azw3 pages', azw3.info && azw3.info.pages === 2],
+    ['azw3 title', azw3.info && azw3.info.title === 'Harbor #2: Dock'],
+    ['epub zip', epub.bytes[0] === 0x50 && epub.bytes[1] === 0x4b],
+    ['epub mimetype', includes(epub.bytes, 'application/epub+zip')],
+    ['epub cover', includes(epub.bytes, 'COMIC-COVER-MARKER')],
+    ['epub page', includes(epub.bytes, 'COMIC-PAGE-MARKER')],
+    ['epub pages', epub.info && epub.info.pages === 2],
+    ['mobi magic', includes(mobi.bytes, 'BOOKMOBI')],
+    ['mobi cover', includes(mobi.bytes, 'COMIC-COVER-MARKER')],
+    ['mobi page', includes(mobi.bytes, 'COMIC-PAGE-MARKER')],
+    ['mobi not cbz', !includes(mobi.bytes.subarray(0, 4), 'PK')],
+  ];
+  const failed = checks.filter((item) => !item[1]).map((item) => item[0]);
+  out.textContent = failed.length ? `FAIL ${failed.join(', ')}` : 'PASS';
+} catch (err) {
+  out.textContent = `FAIL ${err && err.stack ? err.stack : err}`;
+}
+</script>
+</body>
+</html>

@@ -89,7 +89,7 @@ function base32_4(num) {
   );
 }
 
-function decodeXml(value) {
+export function decodeXml(value) {
   return value
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
@@ -99,7 +99,7 @@ function decodeXml(value) {
     .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
 }
 
-function joinPath(dir, href) {
+export function joinPath(dir, href) {
   const raw = decodeXml(href).split('#')[0].replace(/\\/g, '/');
   if (!raw) return '';
   if (raw.startsWith('/')) return raw.replace(/^\/+/, '');
@@ -126,7 +126,7 @@ function findEocd(data) {
   return -1;
 }
 
-async function readZip(buffer) {
+export async function readZip(buffer) {
   const data = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   const eocd = findEocd(data);
   if (eocd < 0) throw new Error('Not a zip/epub archive');
@@ -160,7 +160,7 @@ async function readZip(buffer) {
   return files;
 }
 
-function zipGet(files, path) {
+export function zipGet(files, path) {
   if (files.has(path)) return files.get(path);
   const lower = path.toLowerCase();
   for (const [name, data] of files) {
@@ -218,7 +218,7 @@ function largestImage(files) {
   return best;
 }
 
-async function extractCoverFromEpub(bytes) {
+export async function extractCoverFromEpub(bytes) {
   const files = await readZip(bytes);
   const container = zipGet(files, 'META-INF/container.xml');
   if (!container) return largestImage(files);

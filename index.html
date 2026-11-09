@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Convert EPUB, MOBI, CBZ, and CBR files to Kindle AZW3 in your browser. Bulk conversion, no uploads, files never leave your device.">
-  <title>toazw3 — EPUB, MOBI, CBZ &amp; CBR to Kindle AZW3</title>
+  <meta name="description" content="Convert EPUB, MOBI, AZW3, CBZ, and CBR files to AZW3, EPUB, or MOBI in your browser. Bulk conversion, no uploads, files never leave your device.">
+  <title>toazw3 — EPUB, MOBI, AZW3, CBZ &amp; CBR to AZW3, EPUB, or MOBI</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232a221c'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' fill='%23e8b86d'%3E3%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
   <!-- Google tag (gtag.js) -->
@@ -20,9 +20,9 @@
 <body>
   <div class="page">
     <header class="masthead">
-      <p class="kicker">Kindle sideloading</p>
+      <p class="kicker">Ebook conversion</p>
       <h1>toazw3</h1>
-      <p class="lede">Drop EPUB, MOBI, CBZ, or CBR files here and convert them to AZW3 on this device. Nothing is uploaded. Bulk queues are welcome.</p>
+      <p class="lede">Drop EPUB, MOBI, AZW3, CBZ, or CBR files and convert them to AZW3, EPUB, or MOBI on this device. Nothing is uploaded. Bulk queues are welcome.</p>
       <p class="app-version" id="app-version" hidden></p>
     </header>
 
@@ -31,17 +31,35 @@
       <span id="engine-status">Loading converter…</span>
     </section>
 
+    <fieldset class="output-format" id="format-picker">
+      <legend>Convert to</legend>
+      <div class="format-options">
+        <label class="format-option">
+          <input type="radio" name="output-format" value="azw3" checked>
+          <span class="format-label">AZW3 <small>Kindle</small></span>
+        </label>
+        <label class="format-option">
+          <input type="radio" name="output-format" value="epub">
+          <span class="format-label">EPUB <small>Most readers</small></span>
+        </label>
+        <label class="format-option">
+          <input type="radio" name="output-format" value="mobi">
+          <span class="format-label">MOBI <small>Older Kindles</small></span>
+        </label>
+      </div>
+    </fieldset>
+
     <section
       class="dropzone"
       id="dropzone"
       tabindex="0"
       role="button"
       aria-controls="queue"
-      aria-label="Add EPUB, MOBI, CBZ, or CBR files">
+      aria-label="Add EPUB, MOBI, AZW3, CBZ, or CBR files">
       <input
         id="file-input"
         type="file"
-        accept=".epub,.mobi,.prc,.azw,.azw3,.cbz,.cbr,application/epub+zip,application/x-mobipocket-ebook,application/vnd.comicbook+zip,application/vnd.comicbook-rar,application/x-cbz,application/x-cbr"
+        accept=".epub,.mobi,.prc,.azw,.azw3,.cbz,.cbr,application/epub+zip,application/x-mobipocket-ebook,application/vnd.amazon.ebook,application/x-mobi8-ebook,application/vnd.comicbook+zip,application/vnd.comicbook-rar,application/x-cbz,application/x-cbr"
         multiple
         hidden>
       <div class="dropzone-mark" aria-hidden="true">
@@ -52,7 +70,7 @@
         </svg>
       </div>
       <p class="dropzone-title">Drop ebooks or comics here</p>
-      <p class="dropzone-hint">or <span class="browse">browse</span> — EPUB, MOBI, PRC, AZW, CBZ, CBR. Several at once is fine.</p>
+      <p class="dropzone-hint">or <span class="browse">browse</span> — EPUB, MOBI, PRC, AZW, AZW3, CBZ, CBR. Several at once is fine.</p>
     </section>
 
     <section class="queue-wrap" id="queue-wrap" hidden>
@@ -78,11 +96,11 @@
       </article>
       <article>
         <h3>DRM will fail</h3>
-        <p>Amazon-encrypted Kindle files and password-protected comics cannot be converted. Use DRM-free EPUB, MOBI, CBZ, or CBR sources.</p>
+        <p>Amazon-encrypted Kindle files, Adobe DRM EPUBs, and password-protected comics cannot be converted. DRM-free AZW3, EPUB, MOBI, CBZ, and CBR can.</p>
       </article>
       <article>
-        <h3>Kindle copies</h3>
-        <p>Copy the <code>.azw3</code> files into your Kindle’s documents folder, or send them with USB.</p>
+        <h3>Where the files go</h3>
+        <p>Copy <code>.azw3</code> or <code>.mobi</code> into a Kindle documents folder. <code>.epub</code> opens in most other reading apps. MOBI keeps the cover, chapters, and pictures; it does not keep fixed layout or embedded fonts.</p>
       </article>
     </aside>
 

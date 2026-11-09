@@ -1,14 +1,7 @@
+import { ACCEPTED_INPUT_LABEL, FORMAT_BY_EXT, OUTPUT_FORMATS, isOutputFormat } from './formats.js';
 import { buildZip } from './zip.js';
 
-const FORMAT_BY_EXT = {
-  epub: 'epub',
-  mobi: 'mobi',
-  prc: 'mobi',
-  azw: 'mobi',
-  azw3: 'azw3',
-  cbz: 'cbz',
-  cbr: 'cbr',
-};
+const FORMAT_KEY = 'toazw3-output';
 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('file-input');
@@ -23,11 +16,13 @@ const downloadZipBtn = document.getElementById('download-zip-btn');
 const batchNote = document.getElementById('batch-note');
 const engine = document.getElementById('engine');
 const engineStatus = document.getElementById('engine-status');
+const formatPicker = document.getElementById('format-picker');
 
 const jobs = [];
 let nextId = 1;
 let converting = false;
 let workerReady = false;
+let outputFormat = loadOutputFormat();
 
 const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
 
@@ -60,15 +55,55 @@ function baseName(name) {
   return name.replace(/\.[^/.]+$/, '');
 }
 
+function loadOutputFormat() {
+  try {
+    const saved = sessionStorage.getItem(FORMAT_KEY);
+    if (isOutputFormat(saved)) return saved;
+  } catch {
+    /* Private browsing can block sessionStorage. */
+  }
+  return 'azw3';
+}
+
+function saveOutputFormat(format) {
+  try {
+    sessionStorage.setItem(FORMAT_KEY, format);
+  } catch {
+    /* Ignore storage failures. */
+  }
+}
+
+function outputNameFor(filename, format) {
+  return `${baseName(filename)}.${OUTPUT_FORMATS[format].extension}`;
+}
+
 function uniqueOutputName(preferred, used) {
+  const ext = extensionOf(preferred) || 'azw3';
+  const stem = baseName(preferred);
   let name = preferred;
   let n = 2;
   while (used.has(name.toLowerCase())) {
-    name = `${baseName(preferred)}-${n}.azw3`;
+    name = `${stem}-${n}.${ext}`;
     n += 1;
   }
   used.add(name.toLowerCase());
   return name;
+}
+
+function selectedFormat() {
+  const picked = formatPicker && formatPicker.querySelector('input[name="output-format"]:checked');
+  return picked && isOutputFormat(picked.value) ? picked.value : outputFormat;
+}
+
+function applyOutputFormat(format) {
+  outputFormat = format;
+  saveOutputFormat(format);
+  for (const job of jobs) {
+    if (job.status === 'done' || job.status === 'converting') continue;
+    job.to = format;
+    job.outputName = outputNameFor(job.file.name, format);
+  }
+  render();
 }
 
 function addFiles(fileList) {
@@ -88,14 +123,15 @@ function addFiles(fileList) {
       status: 'queued',
       error: '',
       info: null,
-      outputName: `${baseName(file.name)}.azw3`,
+      to: outputFormat,
+      outputName: outputNameFor(file.name, outputFormat),
       outputBytes: null,
     });
   }
 
   if (skipped && incoming.length) {
     window.alert(
-      `${skipped} file${skipped === 1 ? ' was' : 's were'} skipped. Use EPUB, MOBI, PRC, AZW, AZW3, CBZ, or CBR.`,
+      `${skipped} file${skipped === 1 ? ' was' : 's were'} skipped. Use ${ACCEPTED_INPUT_LABEL}.`,
     );
   }
 
@@ -125,13 +161,17 @@ function render() {
   queueWrap.hidden = jobs.length === 0;
   queueCount.textContent = String(jobs.length);
   convertBtn.disabled = !workerReady || converting || pendingJobs().length === 0;
-  convertBtn.textContent = converting ? 'Converting…' : 'Convert to AZW3';
+  const format = OUTPUT_FORMATS[outputFormat];
+  convertBtn.textContent = converting ? 'Converting…' : `Convert to ${format.label}`;
   clearBtn.disabled = converting;
+  if (formatPicker) {
+    for (const input of formatPicker.querySelectorAll('input')) input.disabled = converting;
+  }
 
   const done = doneJobs();
   batchBar.hidden = done.length === 0;
   batchNote.textContent = done.length
-    ? `${done.length} AZW3 file${done.length === 1 ? '' : 's'} ready`
+    ? `${done.length} file${done.length === 1 ? '' : 's'} ready`
     : '';
 
   queueEl.replaceChildren(
@@ -146,7 +186,7 @@ function render() {
 
       const meta = document.createElement('div');
       meta.className = 'job-meta';
-      const bits = [job.from.toUpperCase(), formatSize(job.file.size)];
+      const bits = [`${job.from.toUpperCase()} → ${job.to.toUpperCase()}`, formatSize(job.file.size)];
       if (job.info && job.info.title) bits.push(job.info.title);
       if (job.info && Array.isArray(job.info.authors) && job.info.authors.length) {
         bits.push(job.info.authors.join(', '));
@@ -171,7 +211,7 @@ function render() {
         dl.textContent = 'Download';
         dl.addEventListener('click', () => {
           downloadBlob(
-            new Blob([job.outputBytes], { type: 'application/x-mobi8-ebook' }),
+            new Blob([job.outputBytes], { type: OUTPUT_FORMATS[job.to].mime }),
             job.outputName,
           );
         });
@@ -225,7 +265,7 @@ async function convertNext() {
   try {
     const bytes = await job.file.arrayBuffer();
     worker.postMessage(
-      { type: 'convert', id: job.id, from: job.from, name: job.file.name, bytes },
+      { type: 'convert', id: job.id, from: job.from, to: job.to, name: job.file.name, bytes },
       [bytes],
     );
   } catch (err) {
@@ -333,6 +373,15 @@ window.addEventListener('drop', (event) => {
     addFiles(event.dataTransfer.files);
   }
 });
+
+if (formatPicker) {
+  const initial = formatPicker.querySelector(`input[value="${outputFormat}"]`);
+  if (initial) initial.checked = true;
+  formatPicker.addEventListener('change', () => {
+    if (converting) return;
+    applyOutputFormat(selectedFormat());
+  });
+}
 
 convertBtn.addEventListener('click', startConversion);
 addMoreBtn.addEventListener('click', () => fileInput.click());

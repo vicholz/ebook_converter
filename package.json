@@ -1,0 +1,8 @@
+{
+  "name": "toazw3",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/convert.test.mjs"
+  }
+}

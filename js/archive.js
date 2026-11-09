@@ -1,5 +1,3 @@
-import libarchiveFactory from '../vendor/libarchive/libarchive.js';
-
 const FILE_TYPE = 32768;
 const DIR_TYPE = 16384;
 const MAX_ENTRY_BYTES = 80 * 1024 * 1024;
@@ -14,15 +12,19 @@ export function preloadArchive() {
 function loadModule() {
   if (!modulePromise) {
     const wasmUrl = new URL('../vendor/libarchive/libarchive.wasm', import.meta.url);
-    modulePromise = libarchiveFactory({
-      locateFile(path) {
-        if (String(path).endsWith('.wasm')) return wasmUrl.href;
-        return path;
-      },
-    }).catch((err) => {
-      modulePromise = null;
-      throw err;
-    });
+    modulePromise = import('../vendor/libarchive/libarchive.js')
+      .then(({ default: libarchiveFactory }) =>
+        libarchiveFactory({
+          locateFile(path) {
+            if (String(path).endsWith('.wasm')) return wasmUrl.href;
+            return path;
+          },
+        }),
+      )
+      .catch((err) => {
+        modulePromise = null;
+        throw err;
+      });
   }
   return modulePromise;
 }
